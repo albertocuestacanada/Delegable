@@ -27,7 +27,7 @@ contract Vault is Delegable, ERC20 {
     /// @dev Post `amount` collateral `from` a wallet `to` a vault.
     function post(address from, address to, uint256 amount)
         public
-        onlyOwnerOrDelegate(from, "Vault: post-access")
+        onlyHolderOrDelegate(from, "Vault: post-access")
     {
         posted[to] = posted[to].add(amount);
         collateral.transferFrom(from, address(this), amount);
@@ -36,7 +36,7 @@ contract Vault is Delegable, ERC20 {
     /// @dev Withdraw `amount` collateral `from` a vault `to` a wallet.
     function withdraw(address from, address to, uint256 amount)
         public
-        onlyOwnerOrDelegate(from, "Vault: withdraw-access")
+        onlyHolderOrDelegate(from, "Vault: withdraw-access")
     {
         posted[from] = posted[from].sub(amount);
         collateral.transfer(to, amount);
@@ -45,7 +45,7 @@ contract Vault is Delegable, ERC20 {
     /// @dev Use `amount` collateral `from` a vault `to` mint tokens in a given wallet.
     function mint(address from, address to, uint256 amount)
         public
-        onlyOwnerOrDelegate(from, "Vault: mint-access")
+        onlyHolderOrDelegate(from, "Vault: mint-access")
     {
         minted[from] = minted[from].add(amount);
         require(minted[from] <= posted[from], "Vault: mint-too-much");
@@ -55,7 +55,7 @@ contract Vault is Delegable, ERC20 {
     /// @dev Burn `amount` tokens `from` a wallet `to` reduce debt of a given wallet.
     function burn(address from, address to, uint256 amount)
         public
-        onlyOwnerOrDelegate(from, "Vault: burn-access")
+        onlyHolderOrDelegate(from, "Vault: burn-access")
     {
         minted[to] = minted[to].sub(amount);
         _burn(from, amount);

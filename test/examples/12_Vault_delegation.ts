@@ -7,7 +7,7 @@ import { id } from 'ethers/lib/utils'
 import { assert } from 'chai'
 
 contract('Delegable', async (accounts: string[]) => {
-  let [owner, user1, user2] = accounts
+  let [holder, user1, user2] = accounts
 
   let vault: any
   let collateral: any
@@ -17,9 +17,9 @@ contract('Delegable', async (accounts: string[]) => {
   const burnSignature = id('burn(address,address,uint256)').slice(0, 10)
 
   beforeEach(async () => {
-    collateral = await MintableERC20.new('Collateral', 'CLT', { from: owner })
-    vault = await Vault.new(collateral.address, 'Vault', 'VLT', { from: owner })
-    await collateral.mint(user1, 1000000, { from: owner })
+    collateral = await MintableERC20.new('Collateral', 'CLT', { from: holder })
+    vault = await Vault.new(collateral.address, 'Vault', 'VLT', { from: holder })
+    await collateral.mint(user1, 1000000, { from: holder })
   })
 
   it('allows posting collateral as delegate', async () => {

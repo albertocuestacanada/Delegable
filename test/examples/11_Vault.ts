@@ -4,15 +4,15 @@ const MintableERC20 = artifacts.require('MintableERC20')
 import { assert } from 'chai'
 
 contract('Delegable', async (accounts: string[]) => {
-  let [owner, user1] = accounts
+  let [holder, user1] = accounts
 
   let vault: any
   let collateral: any
 
   beforeEach(async () => {
-    collateral = await MintableERC20.new('Collateral', 'CLT', { from: owner })
-    vault = await Vault.new(collateral.address, 'Vault', 'VLT', { from: owner })
-    await collateral.mint(user1, 1000000, { from: owner })
+    collateral = await MintableERC20.new('Collateral', 'CLT', { from: holder })
+    vault = await Vault.new(collateral.address, 'Vault', 'VLT', { from: holder })
+    await collateral.mint(user1, 1000000, { from: holder })
   })
 
   it('allows posting collateral', async () => {

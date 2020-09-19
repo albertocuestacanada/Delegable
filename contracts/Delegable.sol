@@ -2,13 +2,13 @@
 pragma solidity ^0.6.7;
 
 
-/// @dev Delegable enables users (owners) to delegate their account management to other users (delegates).
+/// @dev Delegable enables users (holders) to delegate their account management to other users (delegates).
 /// Delegable implements addDelegateByPermit, to add delegates using a permit instead of a separate transaction.
 contract Delegable {
-    event Delegated(address indexed owner, address indexed delegate, bytes4 indexed signature, uint256 expiry);
+    event Delegated(address indexed holder, address indexed delegate, bytes4 indexed signature, uint256 expiry);
 
-    // keccak256("Permit(address owner,address delegate,bytes4 signature,uint256 expiry,uint256 count)");
-    bytes32 public immutable DELEGABLE_TYPEHASH = 0x189fe959048604f27552762e8bcf0a0e930ed27f791f5fd83eab2815d0134816;
+    // keccak256("Permit(address holder,address delegate,bytes4 signature,uint256 expiry,uint256 count)");
+    bytes32 public immutable DELEGABLE_TYPEHASH = 0x58f34037ff23a95a5e0cabb4f92d90f9486d501633c3708a19e031ebd6e1f59c;
     bytes32 public immutable DELEGABLE_SEPARATOR;
     mapping(address => uint) public count;
 
@@ -31,11 +31,11 @@ contract Delegable {
         );
     }
 
-    /// @dev Require that msg.sender is the account owner or a delegate
-    /// @param owner The account owner
+    /// @dev Require that msg.sender is the account holder or a delegate
+    /// @param holder The account holder
     /// @param err The error to display if the validation fails 
-    modifier onlyOwnerOrDelegate(address owner, string memory err) {
-        require(msg.sender == owner || delegates[owner][msg.sender][msg.sig] > block.timestamp, err);
+    modifier onlyHolderOrDelegate(address holder, string memory err) {
+        require(msg.sender == holder || delegates[holder][msg.sender][msg.sig] > block.timestamp, err);
         _;
     }
 
@@ -55,22 +55,22 @@ contract Delegable {
     }
 
     /// @dev Add a delegate through an encoded permit
-    /// @param owner The address giving delegation rights
+    /// @param holder The address giving delegation rights
     /// @param delegate The address receiving delegation rights
     /// @param signature The function that the delegate is allowed to execute, as a bytes4 function signature
     /// @param expiry The latest block timestamp in unix time that the delegation is valid for
     /// @param v Permit component
     /// @param r Permit component
     /// @param s Permit component
-    function addDelegateByPermit(address owner, address delegate, bytes4 signature, uint expiry, uint8 v, bytes32 r, bytes32 s) public {
+    function addDelegateByPermit(address holder, address delegate, bytes4 signature, uint expiry, uint8 v, bytes32 r, bytes32 s) public {
         bytes32 hashStruct = keccak256(
             abi.encode(
                 DELEGABLE_TYPEHASH,
-                owner,
+                holder,
                 delegate,
                 signature,
                 expiry,
-                count[owner]++
+                count[holder]++
             )
         );
 
@@ -83,31 +83,31 @@ contract Delegable {
         );
         address signer = ecrecover(digest, v, r, s);
         require(
-            signer != address(0) && signer == owner,
+            signer != address(0) && signer == holder,
             'Delegable: invalid-signature'
         );
 
-        _addDelegate(owner, delegate, signature, expiry);
+        _addDelegate(holder, delegate, signature, expiry);
     }
 
-    /// @dev Enable a delegate to act on the behalf of an owner
-    /// @param owner The address giving delegation rights
+    /// @dev Enable a delegate to act on the behalf of an holder
+    /// @param holder The address giving delegation rights
     /// @param delegate The address receiving delegation rights
     /// @param signature The function that the delegate is allowed to execute, as a bytes4 function signature
     /// @param expiry The latest block timestamp in unix time that the delegation is valid for
-    function _addDelegate(address owner, address delegate, bytes4 signature, uint expiry) internal {
+    function _addDelegate(address holder, address delegate, bytes4 signature, uint expiry) internal {
         require(delegates[msg.sender][delegate][signature] != expiry, "Delegable: already-delegated");
-        delegates[owner][delegate][signature] = expiry;
-        emit Delegated(owner, delegate, signature, expiry);
+        delegates[holder][delegate][signature] = expiry;
+        emit Delegated(holder, delegate, signature, expiry);
     }
 
-    /// @dev Stop a delegate from acting on the behalf of an owner
-    /// @param owner The address that gave the delegation rights
+    /// @dev Stop a delegate from acting on the behalf of an holder
+    /// @param holder The address that gave the delegation rights
     /// @param delegate The address having delegation rights revoked
     /// @param signature The function that the delegate is not allowed to execute anymore, as a bytes4 function signature
-    function _revokeDelegate(address owner, address delegate, bytes4 signature) internal {
+    function _revokeDelegate(address holder, address delegate, bytes4 signature) internal {
         require(delegates[msg.sender][delegate][signature] > 0, "Delegable: not-delegated");
-        delete delegates[owner][delegate][signature];
-        emit Delegated(owner, delegate, signature, 0);
+        delete delegates[holder][delegate][signature];
+        emit Delegated(holder, delegate, signature, 0);
     }
 }
