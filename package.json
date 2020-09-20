@@ -1,6 +1,6 @@
 {
     "name": "delegable.sol",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "description": "Solidity contracts implementing a delegation pattern",
     "author": "Alberto Cuesta Cañada",
     "engines": {
@@ -9,7 +9,8 @@
       "yarn": ">= 1.10.0"
     },
     "files": [
-      "/contracts/Delegable.sol"
+      "/contracts/Delegable.sol",
+      "/utils/signatures.ts"
     ],
     "keywords": [
       "solidity",
@@ -21,7 +22,7 @@
     "scripts": {
       "build": "buidler compile",
       "test": "buidler test test/*.ts",
-      "ganache": "./scripts/ganache.sh",
+      "ganache": "./utils/ganache.sh",
       "deploy:ganache": "yarn ganache && truffle migrate",
       "coverage": "buidler coverage --network coverage --temp build --testfiles 'test/*.ts'",
       "lint:js": "prettier ./test/**/*.js --write",
